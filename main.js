@@ -63,50 +63,44 @@ setInterval(trocarFraseFooter, 4000);
 
 
 
-// Flip cards: clique/toque e retorno automático do terceiro card.
-
+// Flip cards: hover funciona no computador; clique/toque funciona em celular.
 
 const flipContainers = document.querySelectorAll('.flip-container');
 const flipSound = new Audio('freesound_community-flipcard-91468.mp3');
 
-let temporizadorTerceiroCard = null;
+flipContainers.forEach(container => {
+    container.addEventListener('click', () => {
+        // No celular e no tablet, alterna o lado do card
+        container.classList.toggle('virado');
+
+        // Tenta reproduzir o som do efeito
+        flipSound.currentTime = 0;
+        flipSound.play().catch(() => {
+            // O card continua funcionando mesmo sem o som
+        });
+    });
+});
+
 
 function tocarSom() {
-    flipSound.currentTime = 0;
-
-    const tentativa = flipSound.play();
-
-    if (tentativa && typeof tentativa.catch === "function") {
-        tentativa.catch(() => {});
-    }
+  if (!flipSound) return;
+  flipSound.currentTime = 0;
+  const tentativa = flipSound.play();
+  if (tentativa && typeof tentativa.catch === "function") {
+    tentativa.catch(() => {
+      // Alguns navegadores bloqueiam áudio até haver interação do usuário.
+    });
+  }
 }
 
-flipContainers.forEach((card, indice) => {
-    card.addEventListener('click', () => {
-        card.classList.toggle('virado');
+flipContainers.forEach((card) => {
+  card.addEventListener("click", () => {
+    card.classList.toggle("virado");
+    card.setAttribute("aria-pressed", card.classList.contains("virado") ? "true" : "false");
+    tocarSom();
+  });
 
-        const estaVirado = card.classList.contains('virado');
-
-        card.setAttribute('aria-pressed', estaVirado ? 'true' : 'false');
-
-        tocarSom();
-
-        // Somente o terceiro card controla este temporizador.
-        if (indice === 2) {
-            clearTimeout(temporizadorTerceiroCard);
-            temporizadorTerceiroCard = null;
-
-            if (estaVirado) {
-                temporizadorTerceiroCard = setTimeout(() => {
-                    card.classList.remove('virado');
-                    card.setAttribute('aria-pressed', 'false');
-                    temporizadorTerceiroCard = null;
-                }, 8000);
-            }
-        }
-    });
-
-    card.addEventListener('mouseenter', tocarSom);
+  card.addEventListener("mouseenter", tocarSom);
 });
 
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
