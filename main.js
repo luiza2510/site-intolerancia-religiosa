@@ -62,10 +62,12 @@ setInterval(trocarFraseFooter, 4000);
 
 
 
+
 const flipContainers = document.querySelectorAll(".flip-container");
 const flipSound = new Audio("freesound_community-flipcard-91468.mp3");
 
-let temporizadorCards;
+// Cada card terá seu próprio temporizador.
+const temporizadoresCards = new Map();
 
 function tocarSom() {
   flipSound.currentTime = 0;
@@ -75,31 +77,38 @@ function tocarSom() {
   });
 }
 
-function fecharCards() {
-  flipContainers.forEach((card) => {
-    card.classList.remove("virado");
-    card.setAttribute("aria-pressed", "false");
-  });
-}
-
 flipContainers.forEach((card) => {
   card.addEventListener("click", () => {
+    // Permite virar para frente e para trás ao tocar.
     card.classList.toggle("virado");
 
-    card.setAttribute(
-      "aria-pressed",
-      card.classList.contains("virado") ? "true" : "false"
-    );
+    const estaVirado = card.classList.contains("virado");
+
+    card.setAttribute("aria-pressed", estaVirado ? "true" : "false");
 
     tocarSom();
 
-    clearTimeout(temporizadorCards);
+    // Cancela somente o temporizador deste card.
+    clearTimeout(temporizadoresCards.get(card));
 
-    temporizadorCards = setTimeout(() => {
-      fecharCards();
-    }, 8000);
+    // Se estiver virado, retorna à capa após 8 segundos
+    // sem outro toque neste mesmo card.
+    if (estaVirado) {
+      const temporizador = setTimeout(() => {
+        card.classList.remove("virado");
+        card.setAttribute("aria-pressed", "false");
+        temporizadoresCards.delete(card);
+      }, 8000);
+
+      temporizadoresCards.set(card, temporizador);
+    } else {
+      // Se o usuário fechar o card manualmente,
+      // cancela o retorno automático.
+      temporizadoresCards.delete(card);
+    }
   });
 });
+
 
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
 document.querySelectorAll("#menuPrincipal .nav-link").forEach((link) => {
