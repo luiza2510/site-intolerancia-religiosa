@@ -103,6 +103,22 @@ flipContainers.forEach((card) => {
   card.addEventListener("mouseenter", tocarSom);
 });
 
+
+/* Retorno automático exclusivo do terceiro card */
+const terceiroCard = document.querySelectorAll('.flip-container')[2];
+
+if (terceiroCard) {
+    terceiroCard.addEventListener('click', () => {
+        if (terceiroCard.classList.contains('virado')) {
+            setTimeout(() => {
+                terceiroCard.classList.remove('virado');
+                terceiroCard.setAttribute('aria-pressed', 'false');
+            }, 8000);
+        }
+    });
+}
+
+
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
 document.querySelectorAll("#menuPrincipal .nav-link").forEach((link) => {
   link.addEventListener("click", () => {
