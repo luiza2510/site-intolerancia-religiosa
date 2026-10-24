@@ -65,8 +65,11 @@ setInterval(trocarFraseFooter, 4000);
 
 // Flip cards: clique/toque e retorno automático do terceiro card.
 
+
 const flipContainers = document.querySelectorAll('.flip-container');
 const flipSound = new Audio('freesound_community-flipcard-91468.mp3');
+
+let temporizadorTerceiroCard = null;
 
 function tocarSom() {
     flipSound.currentTime = 0;
@@ -74,13 +77,9 @@ function tocarSom() {
     const tentativa = flipSound.play();
 
     if (tentativa && typeof tentativa.catch === "function") {
-        tentativa.catch(() => {
-            // O card continua funcionando mesmo se o áudio falhar.
-        });
+        tentativa.catch(() => {});
     }
 }
-
-const temporizadoresCards = new Map();
 
 flipContainers.forEach((card, indice) => {
     card.addEventListener('click', () => {
@@ -88,34 +87,28 @@ flipContainers.forEach((card, indice) => {
 
         const estaVirado = card.classList.contains('virado');
 
-        card.setAttribute(
-            'aria-pressed',
-            estaVirado ? 'true' : 'false'
-        );
+        card.setAttribute('aria-pressed', estaVirado ? 'true' : 'false');
 
         tocarSom();
 
-        // Cancela um temporizador anterior deste card, se houver.
-        clearTimeout(temporizadoresCards.get(card));
+        // Somente o terceiro card controla este temporizador.
+        if (indice === 2) {
+            clearTimeout(temporizadorTerceiroCard);
+            temporizadorTerceiroCard = null;
 
-        // Apenas o terceiro card volta à imagem da frente após 8 segundos.
-        if (indice === 2 && estaVirado) {
-            const temporizador = setTimeout(() => {
-                card.classList.remove('virado');
-                card.setAttribute('aria-pressed', 'false');
-
-                temporizadoresCards.delete(card);
-            }, 8000);
-
-            temporizadoresCards.set(card, temporizador);
-        } else {
-            temporizadoresCards.delete(card);
+            if (estaVirado) {
+                temporizadorTerceiroCard = setTimeout(() => {
+                    card.classList.remove('virado');
+                    card.setAttribute('aria-pressed', 'false');
+                    temporizadorTerceiroCard = null;
+                }, 8000);
+            }
         }
     });
 
-    // O som também toca ao passar o mouse no computador.
     card.addEventListener('mouseenter', tocarSom);
 });
+
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
 document.querySelectorAll("#menuPrincipal .nav-link").forEach((link) => {
   link.addEventListener("click", () => {
