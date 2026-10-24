@@ -63,44 +63,58 @@ setInterval(trocarFraseFooter, 4000);
 
 
 
-// Flip cards: hover funciona no computador; clique/toque funciona em celular.
+// Flip cards: clique/toque e retorno automático do terceiro card.
 
 const flipContainers = document.querySelectorAll('.flip-container');
 const flipSound = new Audio('freesound_community-flipcard-91468.mp3');
 
-flipContainers.forEach(container => {
-    container.addEventListener('click', () => {
-        // No celular e no tablet, alterna o lado do card
-        container.classList.toggle('virado');
-
-        // Tenta reproduzir o som do efeito
-        flipSound.currentTime = 0;
-        flipSound.play().catch(() => {
-            // O card continua funcionando mesmo sem o som
-        });
-    });
-});
-
-
 function tocarSom() {
-  if (!flipSound) return;
-  flipSound.currentTime = 0;
-  const tentativa = flipSound.play();
-  if (tentativa && typeof tentativa.catch === "function") {
-    tentativa.catch(() => {
-      // Alguns navegadores bloqueiam áudio até haver interação do usuário.
-    });
-  }
+    flipSound.currentTime = 0;
+
+    const tentativa = flipSound.play();
+
+    if (tentativa && typeof tentativa.catch === "function") {
+        tentativa.catch(() => {
+            // O card continua funcionando mesmo se o áudio falhar.
+        });
+    }
 }
 
-flipContainers.forEach((card) => {
-  card.addEventListener("click", () => {
-    card.classList.toggle("virado");
-    card.setAttribute("aria-pressed", card.classList.contains("virado") ? "true" : "false");
-    tocarSom();
-  });
+const temporizadoresCards = new Map();
 
-  card.addEventListener("mouseenter", tocarSom);
+flipContainers.forEach((card, indice) => {
+    card.addEventListener('click', () => {
+        card.classList.toggle('virado');
+
+        const estaVirado = card.classList.contains('virado');
+
+        card.setAttribute(
+            'aria-pressed',
+            estaVirado ? 'true' : 'false'
+        );
+
+        tocarSom();
+
+        // Cancela um temporizador anterior deste card, se houver.
+        clearTimeout(temporizadoresCards.get(card));
+
+        // Apenas o terceiro card volta à imagem da frente após 8 segundos.
+        if (indice === 2 && estaVirado) {
+            const temporizador = setTimeout(() => {
+                card.classList.remove('virado');
+                card.setAttribute('aria-pressed', 'false');
+
+                temporizadoresCards.delete(card);
+            }, 8000);
+
+            temporizadoresCards.set(card, temporizador);
+        } else {
+            temporizadoresCards.delete(card);
+        }
+    });
+
+    // O som também toca ao passar o mouse no computador.
+    card.addEventListener('mouseenter', tocarSom);
 });
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
 document.querySelectorAll("#menuPrincipal .nav-link").forEach((link) => {
