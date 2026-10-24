@@ -103,22 +103,6 @@ flipContainers.forEach((card) => {
   card.addEventListener("mouseenter", tocarSom);
 });
 
-
-/* Retorno automático exclusivo do terceiro card */
-const terceiroCard = document.querySelectorAll('.flip-container')[2];
-
-if (terceiroCard) {
-    terceiroCard.addEventListener('click', () => {
-        if (terceiroCard.classList.contains('virado')) {
-            setTimeout(() => {
-                terceiroCard.classList.remove('virado');
-                terceiroCard.setAttribute('aria-pressed', 'false');
-            }, 8000);
-        }
-    });
-}
-
-
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
 document.querySelectorAll("#menuPrincipal .nav-link").forEach((link) => {
   link.addEventListener("click", () => {
@@ -159,4 +143,29 @@ document.querySelector("[data-zoom-carousel]").addEventListener("click", () => {
 if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
     window.scrollTo(0, 0);
 }
+
+
+/* Retorno automático do terceiro card, sem alterar os eventos originais */
+const terceiroCard = document.querySelectorAll('.flip-container')[2];
+
+if (terceiroCard) {
+    let temporizadorCombate = null;
+
+    const observarTerceiroCard = new MutationObserver(() => {
+        clearTimeout(temporizadorCombate);
+
+        if (terceiroCard.classList.contains('virado')) {
+            temporizadorCombate = setTimeout(() => {
+                terceiroCard.classList.remove('virado');
+                terceiroCard.setAttribute('aria-pressed', 'false');
+            }, 8000);
+        }
+    });
+
+    observarTerceiroCard.observe(terceiroCard, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+}
+
 
