@@ -150,3 +150,10 @@ document.querySelectorAll("[data-zoom-src]").forEach((botao) => {
 document.querySelector("[data-zoom-carousel]").addEventListener("click", () => {
   abrirZoom(imagemCarrossel.src, imagemCarrossel.alt);
 });
+
+
+/* Ao recarregar a página, voltar ao banner inicial */
+if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+    window.scrollTo(0, 0);
+}
+
