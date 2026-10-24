@@ -316,6 +316,10 @@ section {
     transform: rotateY(180deg);
 }
 
+.flip-card {
+  transition: transform 1s;
+}
+
 /* Permitir que o toque seja reconhecido */
 .flip-container {
     cursor: pointer;
