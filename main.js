@@ -63,44 +63,50 @@ setInterval(trocarFraseFooter, 4000);
 
 
 
-// Flip cards: hover funciona no computador; clique/toque funciona em celular.
 
 const flipContainers = document.querySelectorAll('.flip-container');
 const flipSound = new Audio('freesound_community-flipcard-91468.mp3');
 
-flipContainers.forEach(container => {
-    container.addEventListener('click', () => {
-        // No celular e no tablet, alterna o lado do card
-        container.classList.toggle('virado');
-
-        // Tenta reproduzir o som do efeito
-        flipSound.currentTime = 0;
-        flipSound.play().catch(() => {
-            // O card continua funcionando mesmo sem o som
-        });
-    });
-});
-
-
 function tocarSom() {
-  if (!flipSound) return;
-  flipSound.currentTime = 0;
-  const tentativa = flipSound.play();
-  if (tentativa && typeof tentativa.catch === "function") {
-    tentativa.catch(() => {
-      // Alguns navegadores bloqueiam áudio até haver interação do usuário.
-    });
-  }
+    flipSound.currentTime = 0;
+
+    const tentativa = flipSound.play();
+
+    if (tentativa && typeof tentativa.catch === 'function') {
+        tentativa.catch(() => {
+            // O card continua funcionando sem o áudio.
+        });
+    }
 }
 
-flipContainers.forEach((card) => {
-  card.addEventListener("click", () => {
-    card.classList.toggle("virado");
-    card.setAttribute("aria-pressed", card.classList.contains("virado") ? "true" : "false");
-    tocarSom();
-  });
+let temporizadorTerceiroCard = null;
 
-  card.addEventListener("mouseenter", tocarSom);
+flipContainers.forEach((card, indice) => {
+    card.addEventListener('click', () => {
+        card.classList.toggle('virado');
+
+        const estaVirado = card.classList.contains('virado');
+
+        card.setAttribute('aria-pressed', estaVirado ? 'true' : 'false');
+
+        tocarSom();
+
+        // O temporizador é exclusivo do terceiro card.
+        if (indice === 2) {
+            clearTimeout(temporizadorTerceiroCard);
+            temporizadorTerceiroCard = null;
+
+            if (estaVirado) {
+                temporizadorTerceiroCard = setTimeout(() => {
+                    card.classList.remove('virado');
+                    card.setAttribute('aria-pressed', 'false');
+                    temporizadorTerceiroCard = null;
+                }, 8000);
+            }
+        }
+    });
+
+    card.addEventListener('mouseenter', tocarSom);
 });
 
 // Fecha o menu da navbar depois de selecionar uma seção no celular.
@@ -142,30 +148,6 @@ document.querySelector("[data-zoom-carousel]").addEventListener("click", () => {
 /* Ao recarregar a página, voltar ao banner inicial */
 if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
     window.scrollTo(0, 0);
-}
-
-
-/* Retorno automático do terceiro card, sem alterar os eventos originais */
-const terceiroCard = document.querySelectorAll('.flip-container')[2];
-
-if (terceiroCard) {
-    let temporizadorCombate = null;
-
-    const observarTerceiroCard = new MutationObserver(() => {
-        clearTimeout(temporizadorCombate);
-
-        if (terceiroCard.classList.contains('virado')) {
-            temporizadorCombate = setTimeout(() => {
-                terceiroCard.classList.remove('virado');
-                terceiroCard.setAttribute('aria-pressed', 'false');
-            }, 8000);
-        }
-    });
-
-    observarTerceiroCard.observe(terceiroCard, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
 }
 
 
